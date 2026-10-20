@@ -1,0 +1,22 @@
+# Secretos y credenciales (nunca al repositorio)
+.env
+.env.*
+!.env.example
+credentials*.json
+*.key
+
+# Datos locales de n8n (base de datos, logs y configuración del contenedor)
+.n8n/
+n8n_data/
+*.sqlite
+*.log
+
+# Dependencias y salidas
+node_modules/
+
+# IDEs y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
