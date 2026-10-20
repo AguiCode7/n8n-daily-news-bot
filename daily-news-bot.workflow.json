@@ -1,0 +1,174 @@
+{
+  "name": "Noticias diarias (AguiCode)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a1b2c3d4-0001-4000-8000-000000000001"
+    },
+    {
+      "parameters": {
+        "url": "https://hnrss.org/frontpage",
+        "options": {}
+      },
+      "name": "RSS Read",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "a1b2c3d4-0002-4000-8000-000000000002"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "name": "Limit",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "a1b2c3d4-0003-4000-8000-000000000003"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "noticias"
+      },
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ],
+      "id": "a1b2c3d4-0004-4000-8000-000000000004"
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "response",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "user",
+              "content": "=Eres un editor de tecnología. Resume estas noticias en español, una línea por noticia, con un emoji al inicio y el enlace al final. Máximo 5 líneas.\n\n{{ JSON.stringify($json.noticias) }}"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {}
+      },
+      "name": "OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        880,
+        0
+      ],
+      "id": "a1b2c3d4-0005-4000-8000-000000000005"
+    },
+    {
+      "parameters": {
+        "chatId": "TU_CHAT_ID",
+        "text": "={{ $json.output[0].content[0].text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "a1b2c3d4-0006-4000-8000-000000000006"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "UTC"
+  }
+}
